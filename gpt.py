@@ -78,7 +78,7 @@ class FeedForward(nn.Module):
 class TransformerBlock(nn.Module):
     def __init__(self, cfg):
         super().__init__()
-        self.ln1 = nn.LayerNorm(cfg['emb_dim'])
+        self.ln1 = LayerNorm(cfg['emb_dim'])
         self.attn = MultiHeadAttention(
             cfg['emb_dim'], 
             cfg['emb_dim'], 
@@ -87,7 +87,7 @@ class TransformerBlock(nn.Module):
             cfg['n_heads'],
             qkv_bias=cfg['qkv_bias'])
         self.dropout_shortcut = nn.Dropout(cfg['drop_rate'])
-        self.ln2 = nn.LayerNorm(cfg['emb_dim'])
+        self.ln2 = LayerNorm(cfg['emb_dim'])
         self.ff = FeedForward(cfg)
 
     def forward(self, x):
@@ -130,7 +130,8 @@ class GPTModel(nn.Module):
             TransformerBlock(cfg) for _ in range(cfg['n_layers'])
         ])
         self.ln = LayerNorm(cfg['emb_dim'])
-        self.out_head = nn.Linear(cfg['emb_dim'], cfg['vocab_size'], bias=False)
+        self.out_head = nn.Linear(cfg['emb_dim'], cfg['vocab_size'], 
+                                  bias=False)
 
     def forward(self, x):
         batch_size, seq_len = x.shape
@@ -140,5 +141,5 @@ class GPTModel(nn.Module):
         x = self.drop_emb(x)
         x = self.trf_blocks(x)
         x = self.ln(x)
-        logits = self.out_head(x) # shape: [batch_size, seq_len, vocab_size]
+        logits = self.out_head(x)  # shape: [batch_size, seq_len, vocab_size]
         return logits
